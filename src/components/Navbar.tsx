@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, Brain, Home } from 'lucide-react';
+import { Trophy, Brain } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();

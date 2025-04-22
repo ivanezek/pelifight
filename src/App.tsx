@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Battle from './pages/Battle';
 import Winner from './pages/Winner';
