@@ -77,18 +77,23 @@ const GuessGame = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [mode]);
+
+  // Utilidad para obtener el nombre de la tabla según el modo
+  const getScoresTable = (mode: GameMode | null) => {
+    if (mode === 'release') return 'best_release_scores';
+    return 'best_guess_scores';
+  };
 
   const loadTopRecords = async () => {
-    // Trae todos los records ordenados por score descendente
+    const table = getScoresTable(mode);
     const { data, error } = await supabase
-      .from('best_guess_scores')
+      .from(table)
       .select('score, played_at, user_id, profiles(username, avatar_url)')
       .order('score', { ascending: false })
       .order('played_at', { ascending: false });
     console.log('Ranking data:', data, error);
     if (data) {
-      // Filtrar el mejor score de cada usuario
       const uniqueRecords = [];
       const seen = new Set();
       for (const row of data) {
@@ -219,8 +224,8 @@ const GuessGame = () => {
         setCurrentRound((prev) => prev + 1);
       } else {
         setGameEnded(true);
-        // Save score and reload leaderboard
-        saveScore();
+        // Save score y recarga el ranking con el score correcto
+        saveScore(score + (isCorrectGuess ? 1 : 0));
       }
     }, 1200);
   };
@@ -230,22 +235,24 @@ const GuessGame = () => {
   };
 
   // Save score to Supabase after game ends
-  const saveScore = async () => {
+  const saveScore = async (finalScore?: number) => {
     if (!user) return;
+    const table = getScoresTable(mode);
+    const scoreToSave = finalScore !== undefined ? finalScore : score;
     // 1. Trae el puntaje actual
     const { data: current } = await supabase
-      .from('best_guess_scores')
+      .from(table)
       .select('score')
       .eq('user_id', user.id)
       .single();
 
     // 2. Solo upsert si el nuevo score es mayor o no existe registro
-    if (!current || score > current.score) {
+    if (!current || scoreToSave > current.score) {
       await supabase
-        .from('best_guess_scores')
+        .from(table)
         .upsert({
           user_id: user.id,
-          score,
+          score: scoreToSave,
           played_at: new Date().toISOString(),
         });
     }
