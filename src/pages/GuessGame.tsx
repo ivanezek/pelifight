@@ -34,6 +34,7 @@ const GAME_MODES = [
   { key: 'score', label: '¿Cuál tiene mejor puntaje?' },
   { key: 'release', label: '¿Cuál se estrenó primero?' },
   { key: 'blur', label: 'Adivina la película' },
+  { key: 'whoami', label: '¿Quién soy?' },
 ] as const;
 type GameMode = typeof GAME_MODES[number]['key'];
 
@@ -83,6 +84,7 @@ const GuessGame = () => {
   // Utilidad para obtener el nombre de la tabla según el modo
   const getScoresTable = (mode: GameMode | null) => {
     if (mode === 'release') return 'best_release_scores';
+    if (mode === 'whoami') return 'best_whoami_scores';
     return 'best_guess_scores';
   };
 
@@ -212,6 +214,9 @@ const GuessGame = () => {
       const selectedDate = new Date(selectedMovie.release_date).getTime();
       const otherDate = new Date(otherMovie.release_date).getTime();
       isCorrectGuess = selectedDate <= otherDate;
+    } else if (mode === 'whoami') {
+      // Lógica para el modo ¿Quién soy?
+      // ...
     }
 
     setAllRounds((prev) => prev.map((r, i) =>
@@ -264,23 +269,22 @@ const GuessGame = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
         <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-green-200 transition-colors">Elige una modalidad de juego</h1>
-        <div className="flex flex-col gap-4 w-full max-w-xs">
+        <div className="flex flex-col gap-4 w-full max-w-md mx-auto mt-8">
           {GAME_MODES.map((m) => (
-            <button
-              key={m.key}
-              className="py-3 px-4 rounded-lg font-semibold shadow-md hover:scale-105 transition-transform
-                bg-gradient-to-r dark:from-green-800 dark:to-green-500 dark:text-white
-                from-yellow-400 to-yellow-200 text-gray-900"
-              onClick={() => {
-                if (m.key === 'blur') {
-                  window.location.href = '/guess/blur';
-                } else {
-                  setMode(m.key as GameMode);
-                }
-              }}
-            >
-              {m.label}
-            </button>
+            <a key={m.key} href={m.key === 'blur' || m.key === 'whoami' ? `/guess/${m.key}` : ''} className="block w-full">
+              <button
+                className="w-full py-4 px-6 rounded-xl font-semibold shadow-md hover:scale-105 transition-transform
+                  bg-gradient-to-r dark:from-green-800 dark:to-green-500 dark:text-white
+                  from-yellow-400 to-yellow-200 text-gray-900"
+                onClick={() => {
+                  if (m.key !== 'blur' && m.key !== 'whoami') {
+                    setMode(m.key as GameMode);
+                  }
+                }}
+              >
+                {m.label}
+              </button>
+            </a>
           ))}
         </div>
       </div>
@@ -422,7 +426,7 @@ const GuessGame = () => {
     <div className="min-h-screen flex flex-col items-center justify-center">
       <header className="text-center mb-8 w-full max-w-4xl">
         <h1 className="text-3xl md:text-4xl font-extrabold mb-2 drop-shadow text-gray-900 dark:text-green-200 transition-colors">
-          {mode === 'score' ? '¿Cuál tiene mejor puntaje?' : '¿Cuál se estrenó primero?'}
+          {mode === 'score' ? '¿Cuál tiene mejor puntaje?' : mode === 'release' ? '¿Cuál se estrenó primero?' : '¿Quién soy?'}
         </h1>
         <div className="flex flex-wrap justify-center gap-4 text-lg md:text-xl">
           <span className="px-4 py-2 rounded-full bg-white/20 dark:bg-black/30 font-semibold text-gray-700 dark:text-gray-200">

@@ -41,6 +41,8 @@ function normalizeTitle(str: string) {
 function isTolerantMatch(a: string, b: string) {
   const normA = normalizeTitle(a);
   const normB = normalizeTitle(b);
+  // No permitir respuestas de menos de 3 letras
+  if (normA.length < 3) return false;
   if (normA === normB) return true;
   if (normA.includes(normB) || normB.includes(normA)) return true;
   // Levenshtein distance <= 2 para tolerar errores menores
@@ -383,7 +385,7 @@ const GuessBlur = () => {
         {/* Indicador de progreso/aciertos */}
         <div className="flex flex-row gap-2 mb-4">
           {Array.from({length: MOVIES_PER_ROUND}).map((_, i) => (
-            <div key={i} className={`w-6 h-6 rounded-full flex items-center justify-center border-2 ${successFeedback[i] ? 'bg-green-400 border-green-700 text-white' : (successFeedback[i] === undefined && i < perMovieScores.length && perMovieScores[i] === 0) ? 'bg-gray-400 border-gray-600 text-white' : 'bg-gray-200 dark:bg-gray-700 border-gray-400 dark:border-gray-500'} px-2 py-1 text-base font-bold`}>
+            <div key={i} className={`rounded-full flex items-center justify-center border-2 ${successFeedback[i] ? 'bg-green-400 border-green-700 text-white' : (successFeedback[i] === undefined && i < perMovieScores.length && perMovieScores[i] === 0) ? 'bg-gray-400 border-gray-600 text-white' : 'bg-gray-200 dark:bg-gray-700 border-gray-400 dark:border-gray-500'} px-4 py-4 text-base font-bold`}>
               {successFeedback[i] ? `+${successFeedback[i].points}` : (successFeedback[i] === undefined && i < perMovieScores.length && perMovieScores[i] === 0) ? '0' : ''}
             </div>
           ))}

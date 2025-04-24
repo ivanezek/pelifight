@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Trophy, Brain } from 'lucide-react';
+import { Brain } from 'lucide-react';
 import { FiLogOut, FiUser } from 'react-icons/fi';
 import { supabase } from '../lib/supabaseClient';
 import logo from '/logo.png';
@@ -14,12 +14,6 @@ const Navbar = () => {
   };
 
   const links = [
-    {
-      to: '/',
-      icon: <Trophy className="w-5 h-5" />,
-      label: 'Torneo',
-      color: 'from-orange-500 to-pink-500'
-    },
     {
       to: '/guess',
       icon: <Brain className="w-5 h-5" />,
