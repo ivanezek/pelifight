@@ -283,20 +283,20 @@ const GuessGame = () => {
             ¡Juego terminado! Tu puntuación: <span className="font-bold">{score}</span>
           </div>
           <div className="mb-8 w-full">
-            <h2 className="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200 text-left">Ranking Global</h2>
+            <h2 className="text-lg font-bold mb-2 text-gray-800 dark:text-green-200 text-left">Ranking Global</h2>
             <ol className="space-y-2">
               {topRecords.map((record, idx) => (
-                <li key={record.id} className="flex items-center gap-3 bg-gray-100 rounded-xl px-3 py-2">
+                <li key={record.id} className="flex items-center gap-3 bg-gray-100 dark:bg-neutral-800/90 rounded-xl px-3 py-2 border border-gray-200 dark:border-neutral-700 shadow-sm">
                   <span className="text-gray-400 font-bold">{idx + 1}.</span>
                   {record.avatar_url ? (
-                    <img src={record.avatar_url} alt="avatar" className="w-7 h-7 rounded-full border border-purple-300" />
+                    <img src={record.avatar_url} alt="avatar" className="w-7 h-7 rounded-full border-2 border-purple-400 dark:border-green-400 bg-white dark:bg-black" />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-neutral-700 flex items-center justify-center border-2 border-gray-300 dark:border-neutral-600">
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     </div>
                   )}
-                  <span className="font-medium text-gray-700 dark:text-gray-200">{record.username}</span>
-                  <span className="ml-auto font-mono text-purple-700 font-bold">{record.score} pts</span>
+                  <span className="font-semibold text-gray-800 dark:text-green-200 drop-shadow-sm max-w-[120px] truncate">{record.username}</span>
+                  <span className="ml-auto font-mono text-purple-700 dark:text-green-400 font-bold text-base">{record.score} pts</span>
                 </li>
               ))}
               {topRecords.length === 0 && (
@@ -306,16 +306,17 @@ const GuessGame = () => {
           </div>
 
           <div className="w-full mb-8">
-            <h3 className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-3 text-left">Resumen de rondas</h3>
+            <h3 className="text-base font-semibold text-gray-800 dark:text-green-200 mb-3 text-left">Resumen de rondas</h3>
             <div className="grid grid-cols-2 gap-3">
               {allRounds.map((round, index) => (
                 <div 
                   key={index}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 text-base font-semibold ${
-                    round.isCorrect
-                      ? 'bg-green-50 border-green-200 text-green-700 dark:text-green-200'
-                      : 'bg-red-50 border-red-200 text-red-600 dark:text-red-400'
-                  }`}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-150
+                    ${round.isCorrect
+                      ? 'bg-green-50 dark:bg-green-900/60 border-green-200 dark:border-green-500 text-green-700 dark:text-green-200'
+                      : 'bg-red-50 dark:bg-red-900/60 border-red-200 dark:border-red-500 text-red-600 dark:text-red-400'}
+                  `}
+                  tabIndex={0}
                 >
                   <span className="mb-1">Ronda {index + 1}</span>
                   {round.isCorrect ? (

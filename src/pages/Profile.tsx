@@ -64,14 +64,21 @@ const Profile = ({ onProfileSaved }: { onProfileSaved?: () => void }) => {
     console.log('DEBUG | Avatar upload path:', filePath);
     console.log('DEBUG | User ID:', user.id);
     console.log('DEBUG | File:', file);
+    console.log('Uploading avatar with metadata:', { user_id: user.id });
     setSaving(true);
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(filePath, file, { upsert: true });
+      .upload(filePath, file, {
+        upsert: true,
+        metadata: {
+          user_id: user.id,
+        },
+      });
     if (!uploadError) {
-      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      setAvatarUrl(data.publicUrl);
-      console.log('DEBUG | Avatar public URL:', data.publicUrl);
+      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      setAvatarUrl(publicUrlData.publicUrl);
+      console.log('DEBUG | Avatar public URL:', publicUrlData.publicUrl);
+      console.log('Uploading avatar with metadata: { user_id: "' + user.id + '" }');
     } else {
       setError(uploadError.message);
       console.error('DEBUG | Upload error:', uploadError.message);
