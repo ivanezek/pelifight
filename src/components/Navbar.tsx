@@ -30,9 +30,9 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="w-full flex items-center justify-between px-6 py-4 fixed top-0 left-0 z-50 bg-white/90 dark:bg-black/90 shadow-md border-b border-white/20 dark:border-green-800">
+      <header className="w-full flex items-center justify-between px-0 py-0 fixed top-0 left-0 z-50 bg-transparent shadow-none border-none">
         <div className="flex items-center gap-2">
-          <img src={logo} alt="Logo" className="h-9 w-auto mr-2" />
+          <img src={logo} alt="Logo" className="h-14 w-auto ml-3 mt-2 drop-shadow-lg" style={{background: 'transparent'}} />
         </div>
         <div className="flex-1 flex justify-end">
           {/* Aquí iría el switcher de darkmode, si existe como componente */}

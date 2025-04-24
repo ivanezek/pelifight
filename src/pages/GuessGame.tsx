@@ -80,23 +80,36 @@ const GuessGame = () => {
   }, []);
 
   const loadTopRecords = async () => {
-    // Trae el username y avatar_url correctamente haciendo join con profiles
+    // Trae todos los records ordenados por score descendente
     const { data, error } = await supabase
       .from('best_guess_scores')
       .select('score, played_at, user_id, profiles(username, avatar_url)')
       .order('score', { ascending: false })
-      .limit(10);
+      .order('played_at', { ascending: false });
     console.log('Ranking data:', data, error);
-    setTopRecords(
-      data?.map((row: any) => ({
-        // Usamos user_id como identificador único
-        id: row.user_id + '_' + row.played_at,
-        username: row.profiles?.username || 'Anon',
-        avatar_url: row.profiles?.avatar_url,
-        score: row.score,
-        date: row.played_at,
-      })) || []
-    );
+    if (data) {
+      // Filtrar el mejor score de cada usuario
+      const uniqueRecords = [];
+      const seen = new Set();
+      for (const row of data) {
+        if (!seen.has(row.user_id)) {
+          uniqueRecords.push(row);
+          seen.add(row.user_id);
+        }
+        if (uniqueRecords.length >= 10) break;
+      }
+      setTopRecords(
+        uniqueRecords.map((row: any) => ({
+          id: row.user_id + '_' + row.played_at,
+          username: row.profiles && typeof row.profiles === 'object' ? row.profiles.username || 'Anon' : 'Anon',
+          avatar_url: row.profiles && typeof row.profiles === 'object' ? row.profiles.avatar_url : null,
+          score: row.score,
+          date: row.played_at,
+        }))
+      );
+    } else {
+      setTopRecords([]);
+    }
   };
 
   const handleStartGame = () => {
@@ -219,11 +232,23 @@ const GuessGame = () => {
   // Save score to Supabase after game ends
   const saveScore = async () => {
     if (!user) return;
-    await supabase.from('best_guess_scores').insert({
-      user_id: user.id,
-      score,
-      played_at: new Date().toISOString(),
-    });
+    // 1. Trae el puntaje actual
+    const { data: current } = await supabase
+      .from('best_guess_scores')
+      .select('score')
+      .eq('user_id', user.id)
+      .single();
+
+    // 2. Solo upsert si el nuevo score es mayor o no existe registro
+    if (!current || score > current.score) {
+      await supabase
+        .from('best_guess_scores')
+        .upsert({
+          user_id: user.id,
+          score,
+          played_at: new Date().toISOString(),
+        });
+    }
     await loadTopRecords();
   };
 
