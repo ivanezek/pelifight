@@ -67,20 +67,32 @@ const GuessGame = () => {
 
   useEffect(() => {
     loadTopRecords();
+    // --- REALTIME SUBSCRIPTION ---
+    const channel = supabase
+      .channel('public:best_guess_scores')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'best_guess_scores' }, () => {
+        loadTopRecords();
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadTopRecords = async () => {
-    const { data } = await supabase
+    // Trae el username y avatar_url correctamente haciendo join con profiles
+    const { data, error } = await supabase
       .from('best_guess_scores')
-      .select('score, played_at, profiles(username, avatar_url)')
+      .select('score, played_at, user_id, profiles(username, avatar_url)')
       .order('score', { ascending: false })
       .limit(10);
+    console.log('Ranking data:', data, error);
     setTopRecords(
       data?.map((row: any) => ({
-        id: row.id,
-        username: row.profiles?.username,
+        // Usamos user_id como identificador único
+        id: row.user_id + '_' + row.played_at,
+        username: row.profiles?.username || 'Anon',
         avatar_url: row.profiles?.avatar_url,
-        name: row.profiles?.username || 'Anon',
         score: row.score,
         date: row.played_at,
       })) || []
@@ -247,6 +259,28 @@ const GuessGame = () => {
           </div>
           <div className="mb-6 text-center text-gray-800 dark:text-gray-200">
             10 rondas – ¡Consigue la mayor puntuación!
+          </div>
+          <div className="mb-8 w-full">
+            <h2 className="text-lg font-bold mb-2 text-gray-800 dark:text-green-200 text-left">Ranking Global</h2>
+            <ol className="space-y-2">
+              {topRecords.map((record, idx) => (
+                <li key={record.id} className="flex items-center gap-3 bg-gray-100 dark:bg-neutral-800/90 rounded-xl px-3 py-2 border border-gray-200 dark:border-neutral-700 shadow-sm">
+                  <span className="text-gray-400 font-bold">{idx + 1}.</span>
+                  {record.avatar_url ? (
+                    <img src={record.avatar_url} alt="avatar" className="w-7 h-7 rounded-full border-2 border-purple-400 dark:border-green-400 bg-white dark:bg-black" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-neutral-700 flex items-center justify-center border-2 border-gray-300 dark:border-neutral-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </div>
+                  )}
+                  <span className="font-semibold text-gray-800 dark:text-green-200 drop-shadow-sm max-w-[120px] truncate">{record.username}</span>
+                  <span className="ml-auto font-mono text-purple-700 dark:text-green-400 font-bold text-base">{record.score} pts</span>
+                </li>
+              ))}
+              {topRecords.length === 0 && (
+                <li className="text-gray-400 text-center">Sin récords aún</li>
+              )}
+            </ol>
           </div>
           <Button
             size="lg"
