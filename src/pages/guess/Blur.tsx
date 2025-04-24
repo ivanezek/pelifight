@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -175,24 +175,6 @@ const GuessBlur = () => {
   useEffect(() => {
     if (status === 'finished') { }
   }, [status]);
-
-  // Handler cuando se acaba el tiempo
-  const handleTimeout = () => {
-    setHints([]);
-    setPerMovieScores(scores => {
-      const newScores = [...scores, 0];
-      if (currentIdx === MOVIES_PER_ROUND - 1) {
-        setStatus('finished');
-        setScore(newScores.reduce((a, b) => a + b, 0));
-        saveScore(newScores.reduce((a, b) => a + b, 0));
-      } else {
-        setCurrentIdx(idx => idx + 1);
-      }
-      return newScores;
-    });
-    setSuccessFeedback(fb => [...fb, { idx: currentIdx, points: 0 }]);
-    setInput('');
-  };
 
   // --- Al iniciar, trae 5 películas distintas y más aleatorias ---
   const fetchMoviesForRound = async () => {
