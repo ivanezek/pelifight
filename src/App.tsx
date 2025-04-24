@@ -58,6 +58,13 @@ function App() {
     checkProfile();
   }, [session]);
 
+  useEffect(() => {
+    // Redirige a /guess si está logueado y la ruta es /
+    if (session && window.location.pathname === '/') {
+      window.location.replace('/guess');
+    }
+  }, [session]);
+
   if (!session) {
     return <Auth onAuth={() => window.location.reload()} />;
   }

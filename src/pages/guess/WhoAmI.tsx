@@ -76,7 +76,10 @@ export default function WhoAmI() {
       setDirector(dir ? dir.name : '?');
       // Actor principal
       setMainActor(details.credits.cast?.[0]?.name || '?');
-      setHints([getHint(0)]);
+      // Espera a que movie/director/mainActor estén listos antes de setHints
+      setTimeout(() => {
+        setHints([`Año de estreno: ${details.release_date?.slice(0, 4)}`]);
+      }, 0);
       setAttempt(0);
       setInput('');
       setStatus('playing');

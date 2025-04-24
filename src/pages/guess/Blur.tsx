@@ -24,7 +24,7 @@ const BLUR_LEVELS = [24, 18, 12, 7, 3, 0];
 
 const MAX_ATTEMPTS = 5;
 const MOVIES_PER_ROUND = 5;
-const TIMER_SECONDS = 20;
+const TIMER_SECONDS = 100; // Ahora el timer es global para las 5 películas
 
 // --- Utilidad para normalizar títulos (quita tildes, guiones, signos, minúsculas, y palabras comunes) ---
 function normalizeTitle(str: string) {
@@ -81,7 +81,6 @@ const GuessBlur = () => {
   const [perMovieScores, setPerMovieScores] = useState<number[]>([]); // para sumar el score de cada película
   const [successFeedback, setSuccessFeedback] = useState<{idx: number, points: number}[]>([]); // feedback visual de aciertos
   const [timer, setTimer] = useState(TIMER_SECONDS);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -154,31 +153,27 @@ const GuessBlur = () => {
     }
   };
 
-  // Reinicia timer cada vez que cambia de película o ronda
+  // --- Timer global para toda la ronda ---
   useEffect(() => {
-    if (status === 'playing' && movies.length > 0) {
-      setTimer(TIMER_SECONDS);
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(() => {
-        setTimer(prev => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current!);
-            handleTimeout();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    if (status !== 'playing') return;
+    if (timer <= 0) {
+      setStatus('finished');
+      setScore(perMovieScores.reduce((a, b) => a + b, 0));
+      saveScore(perMovieScores.reduce((a, b) => a + b, 0));
+      return;
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [currentIdx, movies, status]);
+    const interval = setInterval(() => setTimer(t => t - 1), 1000);
+    return () => clearInterval(interval);
+  }, [status, timer]);
 
-  // Limpia timer al desmontar
-  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+  // Al reiniciar ronda, resetea timer
+  useEffect(() => {
+    if (status === 'playing') setTimer(TIMER_SECONDS);
+  }, [status]);
 
   // Cuando el usuario acierta o termina la ronda, limpia el timer
   useEffect(() => {
-    if (status === 'finished') { if (timerRef.current) clearInterval(timerRef.current); }
+    if (status === 'finished') { }
   }, [status]);
 
   // Handler cuando se acaba el tiempo
@@ -199,7 +194,7 @@ const GuessBlur = () => {
     setInput('');
   };
 
-  // --- Al iniciar, trae 5 películas distintas ---
+  // --- Al iniciar, trae 5 películas distintas y más aleatorias ---
   const fetchMoviesForRound = async () => {
     setLoading(true);
     setInput('');
@@ -211,9 +206,9 @@ const GuessBlur = () => {
     setCurrentIdx(0);
     setPerMovieScores([]);
     setSuccessFeedback([]);
-    // Trae varias páginas y elige 5 películas aleatorias y únicas
+    // Trae más páginas y mezcla el array para más aleatoriedad
     let allMovies: Movie[] = [];
-    for (let page = 1; page <= 5; page++) {
+    for (let page = 1; page <= 10; page++) {
       const { data } = await axios.get('https://api.themoviedb.org/3/discover/movie', {
         params: {
           api_key: import.meta.env.VITE_TMDB_API_KEY,
@@ -227,17 +222,20 @@ const GuessBlur = () => {
         allMovies = allMovies.concat(data.results.map((m: any) => ({ id: m.id, title: m.title, poster_path: m.poster_path })));
       }
     }
+    // Mezcla el array para mayor aleatoriedad
+    for (let i = allMovies.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allMovies[i], allMovies[j]] = [allMovies[j], allMovies[i]];
+    }
     // Elige 5 películas únicas
     const chosen: Movie[] = [];
     const usedIds = new Set();
     while (chosen.length < MOVIES_PER_ROUND && allMovies.length) {
-      const idx = Math.floor(Math.random() * allMovies.length);
-      const movie = allMovies[idx];
-      if (!usedIds.has(movie.id) && movie.poster_path) {
+      const movie = allMovies.pop();
+      if (movie && !usedIds.has(movie.id) && movie.poster_path) {
         chosen.push(movie);
         usedIds.add(movie.id);
       }
-      allMovies.splice(idx, 1);
     }
     setMovies(chosen);
     setLoading(false);
@@ -364,6 +362,8 @@ const GuessBlur = () => {
           played_at: new Date().toISOString(),
         });
     }
+    // Siempre refresca el ranking al terminar ronda
+    loadTopRecords();
   };
 
   // --- Render ---
@@ -378,8 +378,11 @@ const GuessBlur = () => {
           </div>
           <div className="flex flex-row gap-4 items-center">
             <span className="font-bold text-green-700 dark:text-green-300">Puntaje: {perMovieScores.reduce((a,b)=>a+b,0)}</span>
-            <span className={`font-mono px-2 py-1 rounded-lg text-white ${timer > 5 ? 'bg-green-500' : 'bg-red-600 animate-pulse'}`}>{timer}s</span>
           </div>
+        </div>
+        {/* Timer global visible */}
+        <div className="text-center text-lg font-bold text-green-400 mb-2">
+          Tiempo restante: {timer}s
         </div>
         <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-green-200">Adivina la película blureada</h1>
         {/* Indicador de progreso/aciertos */}

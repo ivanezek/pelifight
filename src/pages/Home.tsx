@@ -38,9 +38,9 @@ const Home = () => {
           <Button
             size="lg"
             className="text-lg px-8 py-6"
-            onClick={() => navigate('/battle')}
+            onClick={() => navigate('/guess')}
           >
-            Iniciar Torneo
+            Ir a Adivina
           </Button>
         </motion.div>
       </motion.div>
