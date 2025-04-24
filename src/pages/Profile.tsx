@@ -38,12 +38,19 @@ const Profile = ({ onProfileSaved }: { onProfileSaved?: () => void }) => {
     if (!user) return;
     setSaving(true);
     setError(null);
+    // DEBUG: Log info for troubleshooting
+    console.log('DEBUG | handleSave | user.id:', user.id);
+    console.log('DEBUG | handleSave | username:', username);
+    console.log('DEBUG | handleSave | avatarUrl:', avatarUrl);
     const { error } = await supabase.from('profiles').upsert({
       id: user.id,
       username,
       avatar_url: avatarUrl,
     });
-    if (error) setError(error.message);
+    if (error) {
+      setError(error.message);
+      console.error('DEBUG | Profile upsert error:', error.message);
+    }
     setSaving(false);
     if (onProfileSaved && !error) onProfileSaved();
   };
@@ -53,6 +60,10 @@ const Profile = ({ onProfileSaved }: { onProfileSaved?: () => void }) => {
     const file = e.target.files[0];
     const fileExt = file.name.split('.').pop();
     const filePath = `${user.id}/avatar.${fileExt}`;
+    // DEBUG: Log info for troubleshooting
+    console.log('DEBUG | Avatar upload path:', filePath);
+    console.log('DEBUG | User ID:', user.id);
+    console.log('DEBUG | File:', file);
     setSaving(true);
     const { error: uploadError } = await supabase.storage
       .from('avatars')
@@ -60,8 +71,10 @@ const Profile = ({ onProfileSaved }: { onProfileSaved?: () => void }) => {
     if (!uploadError) {
       const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setAvatarUrl(data.publicUrl);
+      console.log('DEBUG | Avatar public URL:', data.publicUrl);
     } else {
       setError(uploadError.message);
+      console.error('DEBUG | Upload error:', uploadError.message);
     }
     setSaving(false);
   };
