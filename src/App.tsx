@@ -10,6 +10,7 @@ import { supabase } from './lib/supabaseClient';
 import type { Session } from '@supabase/supabase-js';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemeSwitcher from './components/ThemeSwitcher';
+import Blur from './pages/guess/Blur';
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -77,6 +78,7 @@ function App() {
             <Route path="/" element={<Battle />} />
             <Route path="/winner" element={<Winner />} />
             <Route path="/guess" element={<GuessGame />} />
+            <Route path="/guess/blur" element={<Blur />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>
           <Navbar />

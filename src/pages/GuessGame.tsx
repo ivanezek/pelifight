@@ -32,7 +32,8 @@ interface GameRound {
 
 const GAME_MODES = [
   { key: 'score', label: '¿Cuál tiene mejor puntaje?' },
-  { key: 'release', label: '¿Cuál se estrenó primero?' }
+  { key: 'release', label: '¿Cuál se estrenó primero?' },
+  { key: 'blur', label: 'Adivina la película' },
 ] as const;
 type GameMode = typeof GAME_MODES[number]['key'];
 
@@ -270,7 +271,13 @@ const GuessGame = () => {
               className="py-3 px-4 rounded-lg font-semibold shadow-md hover:scale-105 transition-transform
                 bg-gradient-to-r dark:from-green-800 dark:to-green-500 dark:text-white
                 from-yellow-400 to-yellow-200 text-gray-900"
-              onClick={() => setMode(m.key as GameMode)}
+              onClick={() => {
+                if (m.key === 'blur') {
+                  window.location.href = '/guess/blur';
+                } else {
+                  setMode(m.key as GameMode);
+                }
+              }}
             >
               {m.label}
             </button>
