@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { supabase } from '../lib/supabaseClient';
 import { Avatar } from "@/components/Avatar";
+import { useNavigate } from 'react-router-dom';
 
 interface Movie {
   id: number;
@@ -30,6 +31,10 @@ interface GameRound {
   isCorrect: boolean | null;
 }
 
+interface GuessGameProps {
+  mode?: 'score' | 'release' | 'blur' | 'whoami';
+}
+
 const GAME_MODES = [
   { key: 'score', label: '¿Cuál tiene mejor puntaje?' },
   { key: 'release', label: '¿Cuál se estrenó primero?' },
@@ -38,7 +43,7 @@ const GAME_MODES = [
 ] as const;
 type GameMode = typeof GAME_MODES[number]['key'];
 
-const GuessGame = () => {
+const GuessGame = ({ mode: modeProp }: GuessGameProps) => {
   const [allRounds, setAllRounds] = useState<GameRound[]>([]);
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
@@ -49,7 +54,9 @@ const GuessGame = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<{username: string, avatar_url: string | null} | null>(null);
   const [showStart, setShowStart] = useState(true);
-  const [mode, setMode] = useState<GameMode | null>(null);
+  const [mode, setMode] = useState<GameMode | null>(modeProp || null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -80,6 +87,10 @@ const GuessGame = () => {
       supabase.removeChannel(channel);
     };
   }, [mode]);
+
+  useEffect(() => {
+    if (modeProp) setMode(modeProp);
+  }, [modeProp]);
 
   // Utilidad para obtener el nombre de la tabla según el modo
   const getScoresTable = (mode: GameMode | null) => {
@@ -271,21 +282,15 @@ const GuessGame = () => {
         <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-green-200 transition-colors">Elige una modalidad de juego</h1>
         <div className="flex flex-col gap-4 w-full max-w-md mx-auto mt-8">
           {GAME_MODES.map((m) => (
-            <a key={m.key} href={m.key === 'blur' || m.key === 'whoami' ? `/guess/${m.key}` : ''} className="block w-full">
-              <button
-                className="w-full py-4 px-6 rounded-xl font-semibold shadow-md hover:scale-105 transition-transform
-                  bg-gradient-to-r dark:from-green-800 dark:to-green-500 dark:text-white
-                  from-yellow-400 to-yellow-200 text-gray-900"
-                onClick={() => {
-                  if (m.key !== 'blur' && m.key !== 'whoami') {
-                    setMode(m.key as GameMode);
-                  }
-                }}
-              >
-                {m.label}
-              </button>
-            </a>
+            <Button
+              key={m.key}
+              className="w-full py-4 px-6 rounded-xl font-semibold shadow-md hover:scale-105 transition-transform bg-gradient-to-r dark:from-green-800 dark:to-green-500 dark:text-white from-yellow-400 to-yellow-200 text-gray-900 text-lg"
+              onClick={() => navigate(`/guess/${m.key}`)}
+            >
+              {m.label}
+            </Button>
           ))}
+          
         </div>
       </div>
     );
@@ -491,7 +496,7 @@ const GuessGame = () => {
                       </span>
                     )}
                     {mode === 'score' && showResult && (
-                      <span className="flex items-center gap-1"><svg className="w-4 h-4 text-yellow-400 dark:text-yellow-600 inline" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 00-1.175 0l-3.385 2.46c-.784.57-1.838-.197-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.286-3.967z" /></svg> {Math.round(movie.vote_average * 10) / 10}</span>
+                      <span className="flex items-center gap-1"><svg className="w-4 h-4 text-yellow-400 dark:text-yellow-600 inline" fill="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 00-1.175 0l-3.385 2.46c-.784.57-1.838-.197-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.286-3.967z" /></svg> {Math.round(movie.vote_average * 10) / 10}</span>
                     )}
                   </div>
                 </div>

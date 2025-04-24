@@ -12,6 +12,9 @@ import { ThemeProvider } from './context/ThemeContext';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import Blur from './pages/guess/Blur';
 import WhoAmI from './pages/guess/WhoAmI';
+import Impostor from './pages/guess/Impostor';
+import Score from './pages/guess/Score';
+import Release from './pages/guess/Release';
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -88,6 +91,9 @@ function App() {
             <Route path="/guess" element={<GuessGame />} />
             <Route path="/guess/blur" element={<Blur />} />
             <Route path="/guess/whoami" element={<WhoAmI />} />
+            <Route path="/guess/impostor" element={<Impostor />} />
+            <Route path="/guess/score" element={<Score />} />
+            <Route path="/guess/release" element={<Release />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>
           <Navbar />
