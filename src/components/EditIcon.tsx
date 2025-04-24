@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react'; // Remove unused import
 
 export const EditIcon = ({ className = "w-6 h-6" }) => (
   <svg

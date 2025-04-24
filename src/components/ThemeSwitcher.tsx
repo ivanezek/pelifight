@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react'; // Remove unused import
 import { useTheme } from '../context/ThemeContext';
 
 export default function ThemeSwitcher() {
